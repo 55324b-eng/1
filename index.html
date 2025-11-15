@@ -11,7 +11,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             background-color: #000;
             color: #fff;
@@ -20,58 +20,62 @@
             line-height: 1.5;
             display: flex;
             flex-direction: column;
-            align-items: center; 
+            align-items: center;
+            padding-bottom: 20px;
         }
-        
+
         .header-template {
             width: 100%;
             height: 40px;
             background-color: #262626;
             flex-shrink: 0;
             margin-bottom: 10px;
-            display: flex; 
-            align-items: center; 
-            padding: 0 10px; 
-            justify-content: space-between; 
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
-        
+
         .header-left {
             display: flex;
             align-items: center;
             flex-grow: 1;
         }
-        
+
         .header-title {
             color: #fff;
             font-size: 20px;
             font-weight: 800;
             margin-right: 20px;
         }
-        
+
         .header-right {
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
+
         .search-input {
             padding: 5px 8px;
-            border: 1px solid #0056b3; 
+            border: 1px solid #0056b3;
             border-radius: 4px;
             background-color: #333;
             color: #fff;
             font-size: 14px;
-            width: 180px; 
-            display: none; 
-            outline: none; 
+            width: 180px;
+            display: none;
+            outline: none;
         }
 
         .search-input:focus {
-            border-color: #0056b3; 
-            box-shadow: 0 0 0 1px #0056b3; 
+            border-color: #0056b3;
+            box-shadow: 0 0 0 1px #0056b3;
         }
-        
-        #searchIcon {
+
+        #searchIcon, #backIcon {
             cursor: pointer;
             width: 25px;
             height: 25px;
@@ -79,25 +83,25 @@
             align-items: center;
             justify-content: center;
         }
-        
-        #searchIcon svg {
+
+        #searchIcon svg, #backIcon svg {
             fill: #fff;
             width: 100%;
             height: 100%;
         }
-        
+
         .main-content-wrapper {
             width: 100%;
-            max-width: 1200px; 
-            padding-left: 10px; 
-            padding-right: 10px; 
+            max-width: 1200px;
+            padding-left: 10px;
+            padding-right: 10px;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            gap: 0px; 
+            gap: 0px;
             padding-bottom: 20px;
         }
-        
+
         #contentContainer {
             width: 100%;
             display: flex;
@@ -106,6 +110,7 @@
             justify-content: center;
         }
 
+        /* --- GALLERY ITEM STYLE (PAGE 1) --- */
         .toggle-group {
             width: 100%;
             display: flex;
@@ -134,13 +139,13 @@
             border-radius: 5px;
             transition: transform 0.3s ease-in-out;
         }
-        
+
         .title-row {
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            margin: 0px 0 0 0; 
+            margin: 0px 0 0 0;
             cursor: pointer;
         }
 
@@ -154,15 +159,7 @@
             text-shadow: 1px 1px 2px #000000;
         }
 
-        .image-content {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            width: 100%;
-            gap: 5px;
-            padding: 5px 0;
-        }
-
+        /* --- VIEWER MODE IMAGE STYLE (PAGE 2) --- */
         .displayImage {
             max-width: 100%;
             width: auto;
@@ -170,6 +167,8 @@
             display: block;
             object-fit: contain;
             border-radius: 3px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .hidden {
@@ -181,7 +180,7 @@
     </style>
 </head>
 <body>
-    
+
     <div class="header-template">
         <div class="header-left">
             <span class="header-title">Anime</span>
@@ -204,281 +203,281 @@
 
     <script>
         const container = document.getElementById('contentContainer');
-        const lazyImages = [];
-        const searchInput = document.getElementById('searchInput'); 
+        const headerTitle = document.querySelector('.header-title');
+        const headerRight = document.querySelector('.header-right');
+        const searchInput = document.getElementById('searchInput');
         const searchIcon = document.getElementById('searchIcon');
-        const toggleGroups = []; 
 
-        let lazyImageObserver = null;
-        if ('IntersectionObserver' in window) {
-            lazyImageObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const lazyImage = entry.target;
-                        
-                        if (lazyImage.dataset.src) {
-                            lazyImage.src = lazyImage.dataset.src;
-                            lazyImage.classList.remove('lazy-thumb');
-                            
-                            observer.unobserve(lazyImage);
-                        }
-                    }
-            
-                });
-            }, {
-                rootMargin: '250px', 
-                
-                threshold: 0.01
-            });
-        }
-        
-        function observeAllLazyImages() {
-            if (lazyImageObserver) {
-                lazyImages.forEach(lazyImage => {
-                    if (!lazyImage.src && lazyImage.dataset.src) {
-                        lazyImageObserver.observe(lazyImage);
-                        
-                    }
-                });
-            }
-        }
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewPattern = urlParams.get('pattern');
+        const viewEnd = urlParams.get('end');
+        const viewDesc = urlParams.get('desc') === 'true';
+        const viewTitle = urlParams.get('title');
 
-        function unobserveAllLazyImages() {
-            if (lazyImageObserver) {
-                lazyImages.forEach(lazyImage => {
-                    lazyImageObserver.unobserve(lazyImage);
-                });
-            }
-        }
-        
-        function toggleSearch() {
-            const isHidden = searchInput.style.display === 'none' || searchInput.style.display === '';
+        if (viewPattern && viewEnd && viewTitle) {
 
-            if (isHidden) {
-                searchInput.value = ''; 
-                searchInput.style.display = 'block'; 
-                searchInput.focus();
-                filterContent(); 
-            } else {
-                searchInput.value = ''; 
-                searchInput.style.display = 'none';
-                filterContent();
-            }
-        }
+            document.title = viewTitle;
 
-        searchIcon.addEventListener('click', toggleSearch);
+            headerRight.innerHTML = '';
 
-        function filterContent() {
-            const query = searchInput.value.toLowerCase();
-            
-            unobserveAllLazyImages();
-            
-            toggleGroups.forEach(group => {
-                const titleElement = group.querySelector('.image-title');
-                const title = titleElement ? titleElement.textContent.toLowerCase() : '';
-                
-                if (title.includes(query)) {
-                    group.style.display = 'flex';
-                    const lazyImage = group.querySelector('.lazy-thumb');
-                    if (lazyImage && lazyImageObserver) {
-                        lazyImageObserver.observe(lazyImage);
-                    }
-                } else {
-                    group.style.display = 'none';
-                }
-            });
-        }
-        
-        searchInput.addEventListener('input', filterContent);
+            container.style.gap = '10px';
+            container.style.padding = '10px 0';
 
-        function getUrlInfo(finalUrl) {
-            let desc = finalUrl.endsWith('★');
-            let url = finalUrl.replace('★', '');
-            
-            const regex = /(\d+)(\.[a-zA-Z0-9]+$)/;
-            const numMatch = url.match(regex);
-            
-            let end = 1;
-            let pattern = url; 
-            
-            if (numMatch) {
-                const numStr = numMatch[1];
-                const extension = numMatch[2];
-                
-                end = parseInt(numStr);
-                pattern = url.replace(numMatch[0], '{i}' + extension);
-            } else {
-                pattern = url.replace(/\.[a-zA-Z0-9]+$/, '{i}');
+            const endNum = parseInt(viewEnd);
+            const startLoop = viewDesc ? endNum : 1;
+            const endLoop = viewDesc ? 1 : endNum;
+
+            for (let i = startLoop; viewDesc ? i >= endLoop : i <= endLoop; viewDesc ? i-- : i++) {
+                const imageUrl = viewPattern.replace('{i}', i);
+                const imageElement = document.createElement('img');
+                imageElement.className = 'displayImage';
+                imageElement.src = imageUrl;
+                imageElement.alt = `${viewTitle} #${i}`;
+
+                container.appendChild(imageElement);
             }
 
-            const pathSeg = url.split('/');
-            let filename = pathSeg[pathSeg.length - 1]; 
-            
-            let titlePart = filename.replace(/\.[a-zA-Z0-9]+$/, ''); 
-            
-            const regexToRemoveAllNumbers = /(-?\d+)+$/;
-            
-            titlePart = titlePart.replace(regexToRemoveAllNumbers, '');
-            titlePart = titlePart.replace(/[_-]$/, ''); 
-            
-            titlePart = titlePart.replace(/^\d+[a-zA-Z]-/, ''); 
+        } else {
 
-            let title = titlePart.replace(/[_-]/g, ' ').trim();
-            title = title.split(' ').map(word => 
-                word.length > 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word
-            ).join(' ');
-            return { end, pattern, desc, title };
-        }
-        
-        function processImageData(data) {
-            data.forEach((finalUrl, index) => { 
-                const { end, pattern, desc, title } = getUrlInfo(finalUrl);
+            const lazyImages = [];
+            const toggleGroups = [];
 
-                const thumbNumDefault = desc ? end : 1;
-            
-                const thumbUrlDefault = pattern.replace('{i}', thumbNumDefault);
+            let lazyImageObserver = null;
+            if ('IntersectionObserver' in window) {
+                lazyImageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const lazyImage = entry.target;
 
-                const toggleGroupDiv = document.createElement('div');
-   
-                toggleGroupDiv.className = 'toggle-group';
-                
-                const thumbnailContainerTopDiv = document.createElement('div');
-                thumbnailContainerTopDiv.className 
-                    = 'thumbnail-container';
-                
-                const thumbnailImageTop = document.createElement('img');
-                thumbnailImageTop.className = 'thumbnail-image lazy-thumb';
-      
-                thumbnailImageTop.dataset.src = thumbUrlDefault; 
-                thumbnailImageTop.alt = `Thumbnail: ${title} 
- #${thumbNumDefault}`;
+                            if (lazyImage.dataset.src) {
+                                lazyImage.src = lazyImage.dataset.src;
+                                lazyImage.classList.remove('lazy-thumb');
 
-                thumbnailImageTop.dataset.pattern = pattern;
-                thumbnailImageTop.dataset.end = end;
-                thumbnailImageTop.dataset.desc = desc;
-                
-                thumbnailImageTop.dataset.attempt = thumbNumDefault; 
-                
-                thumbnailImageTop.onerror = function() {
-                    const img = this;
-                    let currentAttempt = parseInt(img.dataset.attempt);
-                    const pattern = img.dataset.pattern;
-                    const end = parseInt(img.dataset.end);
-                    const desc = img.dataset.desc === 'true'; 
-
-                    let nextAttempt = currentAttempt;
-                    let endLoop = desc ? 1 : end; 
-
-                    if (desc) { 
-                        nextAttempt = currentAttempt - 1;
-                    } else { 
-                        nextAttempt = currentAttempt + 1;
-                    }
-
-                    if ((desc && nextAttempt >= endLoop) || (!desc && nextAttempt <= endLoop)) { 
-                        img.dataset.attempt = nextAttempt; 
-                        img.dataset.src = pattern.replace('{i}', nextAttempt); 
-                        img.src = img.dataset.src; 
-                        img.alt = `Thumbnail: ${title} #${nextAttempt} (Attempting fallback)`;
-                    } else {
-                        img.onerror = null; 
-                        img.style.display = 'none'; 
-                        console.warn(`Could not find a valid thumbnail for: ${title}`);
-                    }
-                    
-                    if (lazyImageObserver) {
-                        lazyImageObserver.unobserve(img);
-                    }
-                };
-
-                thumbnailContainerTopDiv.appendChild(thumbnailImageTop);
-                toggleGroupDiv.appendChild(thumbnailContainerTopDiv);
-                lazyImages.push(thumbnailImageTop);
-                
-                const titleRow = document.createElement('div');
-                titleRow.className = 'title-row';
-                
-                const titleElement = document.createElement('h2');
-                titleElement.className = 'image-title';
-                titleElement.textContent = title; 
-
-                titleRow.appendChild(titleElement);
-                toggleGroupDiv.appendChild(titleRow);
-                const imageContentDiv = document.createElement('div');
-                imageContentDiv.className = 'image-content';
-                imageContentDiv.id = `content-${index}`;
-                imageContentDiv.classList.add('hidden');
-                
-                imageContentDiv.dataset.loaded = 'false';
-                
-                toggleGroupDiv.appendChild(imageContentDiv);
-                container.appendChild(toggleGroupDiv);
-                
-                toggleGroups.push(toggleGroupDiv); 
-                
-                const clickHandler = function() {
-                    const isHidden = imageContentDiv.classList.contains('hidden');
-                    if (isHidden) {
-                        unobserveAllLazyImages();
-                        if (imageContentDiv.dataset.loaded === 'false') {
-                            
-                            const startLoop = desc ?
-                                end : 1;
-                            const endLoop = desc ? 1 : end;
-                            for (let i = startLoop; desc ? i >= endLoop : i <= endLoop; desc ? i-- : i++) {
-                                
-                                const imageUrl = pattern.replace('{i}', i);
-                                const imageElement = document.createElement('img');
-                                imageElement.className = 'displayImage';
-                                imageElement.src = imageUrl;
-                                imageElement.alt = `${title} #${i}`;
-                                imageElement.ondblclick = function(event) {
-                                    event.stopPropagation();
-                                    imageContentDiv.classList.add('hidden');
-                                    observeAllLazyImages();
-                                    toggleGroupDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                };
-                                
-                                imageContentDiv.appendChild(imageElement);
+                                observer.unobserve(lazyImage);
                             }
-                            imageContentDiv.dataset.loaded = 'true';
+                        }
+                    });
+                }, {
+                    rootMargin: '250px',
+                    threshold: 0.01
+                });
+            }
+
+            function observeAllLazyImages() {
+                if (lazyImageObserver) {
+                    lazyImages.forEach(lazyImage => {
+                        if (!lazyImage.src && lazyImage.dataset.src) {
+                            lazyImageObserver.observe(lazyImage);
+                        }
+                    });
+                }
+            }
+
+            function unobserveAllLazyImages() {
+                if (lazyImageObserver) {
+                    lazyImages.forEach(lazyImage => {
+                        lazyImageObserver.unobserve(lazyImage);
+                    });
+                }
+            }
+
+            function toggleSearch() {
+                const isHidden = searchInput.style.display === 'none' || searchInput.style.display === '';
+
+                if (isHidden) {
+                    searchInput.value = '';
+                    searchInput.style.display = 'block';
+                    searchInput.focus();
+                    filterContent();
+                } else {
+                    searchInput.value = '';
+                    searchInput.style.display = 'none';
+                    filterContent();
+                }
+            }
+
+            searchIcon.addEventListener('click', toggleSearch);
+
+            function filterContent() {
+                const query = searchInput.value.toLowerCase();
+
+                unobserveAllLazyImages();
+
+                toggleGroups.forEach(group => {
+                    const titleElement = group.querySelector('.image-title');
+                    const title = titleElement ? titleElement.textContent.toLowerCase() : '';
+
+                    if (title.includes(query)) {
+                        group.style.display = 'flex';
+                        const lazyImage = group.querySelector('.lazy-thumb');
+                        if (lazyImage && lazyImageObserver) {
+                            lazyImageObserver.observe(lazyImage);
                         }
                     } else {
-                        observeAllLazyImages();
+                        group.style.display = 'none';
+                    }
+                });
+            }
+
+            searchInput.addEventListener('input', filterContent);
+
+            function getUrlInfo(finalUrl) {
+                let desc = finalUrl.endsWith('★');
+                let url = finalUrl.replace('★', '');
+
+                const regex = /(\d+)(\.[a-zA-Z0-9]+$)/;
+                const numMatch = url.match(regex);
+
+                let end = 1;
+                let pattern = url;
+
+                if (numMatch) {
+                    const numStr = numMatch[1];
+                    const extension = numMatch[2];
+
+                    end = parseInt(numStr);
+                    pattern = url.replace(numMatch[0], '{i}' + extension);
+                } else {
+                    pattern = url.replace(/\.[a-zA-Z0-9]+$/, '{i}');
+                }
+
+                const pathSeg = url.split('/');
+                let filename = pathSeg[pathSeg.length - 1];
+
+                let titlePart = filename.replace(/\.[a-zA-Z0-9]+$/, '');
+
+                const regexToRemoveAllNumbers = /(-?\d+)+$/;
+
+                titlePart = titlePart.replace(regexToRemoveAllNumbers, '');
+                titlePart = titlePart.replace(/[_-]$/, '');
+
+                titlePart = titlePart.replace(/^\d+[a-zA-Z]-/, '');
+
+                let title = titlePart.replace(/[_-]/g, ' ').trim();
+                title = title.split(' ').map(word =>
+                    word.length > 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word
+                ).join(' ');
+                return { end, pattern, desc, title };
+            }
+
+            function processImageData(data) {
+                data.forEach((finalUrl, index) => {
+                    const { end, pattern, desc, title } = getUrlInfo(finalUrl);
+
+                    const thumbNumDefault = desc ? end : 1;
+
+                    const thumbUrlDefault = pattern.replace('{i}', thumbNumDefault);
+
+                    const toggleGroupDiv = document.createElement('div');
+
+                    toggleGroupDiv.className = 'toggle-group';
+
+                    const thumbnailContainerTopDiv = document.createElement('div');
+                    thumbnailContainerTopDiv.className
+                        = 'thumbnail-container';
+
+                    const thumbnailImageTop = document.createElement('img');
+                    thumbnailImageTop.className = 'thumbnail-image lazy-thumb';
+
+                    thumbnailImageTop.dataset.src = thumbUrlDefault;
+                    thumbnailImageTop.alt = `Thumbnail: ${title}
+    #${thumbNumDefault}`;
+
+                    thumbnailImageTop.dataset.pattern = pattern;
+                    thumbnailImageTop.dataset.end = end;
+                    thumbnailImageTop.dataset.desc = desc;
+
+                    thumbnailImageTop.dataset.attempt = thumbNumDefault;
+
+                    thumbnailImageTop.onerror = function() {
+                        const img = this;
+                        let currentAttempt = parseInt(img.dataset.attempt);
+                        const pattern = img.dataset.pattern;
+                        const end = parseInt(img.dataset.end);
+                        const desc = img.dataset.desc === 'true';
+
+                        let nextAttempt = currentAttempt;
+                        let endLoop = desc ? 1 : end;
+
+                        if (desc) {
+                            nextAttempt = currentAttempt - 1;
+                        } else {
+                            nextAttempt = currentAttempt + 1;
+                        }
+
+                        if ((desc && nextAttempt >= endLoop) || (!desc && nextAttempt <= endLoop)) {
+                            img.dataset.attempt = nextAttempt;
+                            img.dataset.src = pattern.replace('{i}', nextAttempt);
+                            img.src = img.dataset.src;
+                            img.alt = `Thumbnail: ${title} #${nextAttempt} (Attempting fallback)`;
+                        } else {
+                            img.onerror = null;
+                            img.style.display = 'none';
+                            console.warn(`Could not find a valid thumbnail for: ${title}`);
+                        }
+
+                        if (lazyImageObserver) {
+                            lazyImageObserver.unobserve(img);
+                        }
+                    };
+
+                    thumbnailContainerTopDiv.appendChild(thumbnailImageTop);
+                    toggleGroupDiv.appendChild(thumbnailContainerTopDiv);
+                    lazyImages.push(thumbnailImageTop);
+
+                    const titleRow = document.createElement('div');
+                    titleRow.className = 'title-row';
+
+                    const titleElement = document.createElement('h2');
+                    titleElement.className = 'image-title';
+                    titleElement.textContent = title;
+
+                    titleRow.appendChild(titleElement);
+                    toggleGroupDiv.appendChild(titleRow);
+
+
+                    container.appendChild(toggleGroupDiv);
+                    toggleGroups.push(toggleGroupDiv);
+
+                    const clickHandler = function() {
+                        const viewerUrl = new URL(window.location.origin + window.location.pathname);
+                        viewerUrl.searchParams.set('pattern', pattern);
+                        viewerUrl.searchParams.set('end', end);
+                        viewerUrl.searchParams.set('desc', desc);
+                        viewerUrl.searchParams.set('title', title);
+
+                        window.location.href = viewerUrl.toString();
+                    };
+
+                    titleRow.onclick = clickHandler;
+                    thumbnailContainerTopDiv.onclick = clickHandler;
+                });
+                observeAllLazyImages();
+            }
+
+            fetch('https://55324b-eng.github.io/B/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
                     }
 
-                    imageContentDiv.classList.toggle('hidden');
-                    toggleGroupDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                };
+                    return response.json();
+                })
+                .then(data => {
+                    if (Array.isArray(data)) {
 
-                titleRow.onclick = clickHandler;
-                thumbnailContainerTopDiv.onclick = clickHandler;
-            });
-            observeAllLazyImages();
-        }
+                        processImageData(data);
+                    } else {
+                        console.error('Fetched data is not an array:', data);
+                        container.innerHTML = '<h1 style="color: red; text-align: center;">❌ Error loading gallery data. Check network connection or data URL.</h1>';
+                    }
 
-        fetch('https://55324b-eng.github.io/B/')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-    
-                return response.json();
-            })
-            .then(data => {
-                if (Array.isArray(data)) {
-                 
-                    processImageData(data);
-                } else {
-                    console.error('Fetched data is not an array:', data);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
                     container.innerHTML = '<h1 style="color: red; text-align: center;">❌ Error loading gallery data. Check network connection or data URL.</h1>';
-                }
-         
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-                container.innerHTML = '<h1 style="color: red; text-align: center;">❌ Error loading gallery data. Check network connection or data URL.</h1>';
-            });
+                });
+        }
  </script>
 </body>
 </html>
