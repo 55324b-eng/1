@@ -110,7 +110,6 @@
             justify-content: center;
         }
 
-        /* --- GALLERY ITEM STYLE (PAGE 1) --- */
         .toggle-group {
             width: 100%;
             display: flex;
@@ -159,7 +158,6 @@
             text-shadow: 1px 1px 2px #000000;
         }
 
-        /* --- VIEWER MODE IMAGE STYLE (PAGE 2) --- */
         .displayImage {
             max-width: 100%;
             width: auto;
@@ -177,6 +175,30 @@
 
         .lazy-thumb {
         }
+
+        .counter-wrapper {
+            height: 20px; 
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            font-size: 18px; 
+            font-weight: 500; 
+            color: #fff;
+            margin-right: 10px; 
+            text-shadow: 1px 1px 2px #000000; 
+        }
+
+        .counter-current {
+            display: block;
+            min-width: 10px; 
+            transition: transform 0.2s ease-out; 
+        }
+
+        .counter-slash {
+            margin: 0 3px; 
+        }
+        
     </style>
 </head>
 <body>
@@ -207,7 +229,6 @@
         const headerRight = document.querySelector('.header-right');
         const searchInput = document.getElementById('searchInput');
         const searchIcon = document.getElementById('searchIcon');
-
         const urlParams = new URLSearchParams(window.location.search);
         const viewPattern = urlParams.get('pattern');
         const viewEnd = urlParams.get('end');
@@ -215,17 +236,81 @@
         const viewTitle = urlParams.get('title');
 
         if (viewPattern && viewEnd && viewTitle) {
+            
+            if ('scrollRestoration' in history) {
+                history.scrollRestoration = 'manual';
+            }
 
             document.title = viewTitle;
+            headerRight.innerHTML = ''; 
 
-            headerRight.innerHTML = '';
+            const endNum = parseInt(viewEnd); 
+            const totalImages = endNum;
+
+            const counterWrapper = document.createElement('div');
+            counterWrapper.className = 'counter-wrapper';
+
+            const counterCurrent = document.createElement('span');
+            counterCurrent.className = 'counter-current';
+            counterCurrent.textContent = '1'; 
+
+            const counterSlash = document.createElement('span');
+            counterSlash.className = 'counter-slash';
+            counterSlash.textContent = '|';
+
+            const counterTotal = document.createElement('span');
+            counterTotal.className = 'counter-total';
+            counterTotal.textContent = totalImages; 
+
+            counterWrapper.appendChild(counterCurrent);
+            counterWrapper.appendChild(counterSlash);
+            counterWrapper.appendChild(counterTotal);
+            
+            headerRight.appendChild(counterWrapper);
+
+            let lastDisplayIndex = 1;
+            function updateCounterAnimated(newDisplayIndex) {
+                const newIndex = parseInt(newDisplayIndex);
+                if (newIndex === lastDisplayIndex) {
+                    return; 
+                }
+
+                const direction = (newIndex > lastDisplayIndex) ? 1 : -1;
+                const translateY = 100 * direction; 
+
+                counterCurrent.style.transform = `translateY(${translateY * -1}%)`;
+                
+                setTimeout(() => {
+                    counterCurrent.style.transition = 'none'; 
+                    counterCurrent.textContent = newIndex;
+                    counterCurrent.style.transform = `translateY(${translateY}%)`; 
+                    
+                    void counterCurrent.offsetWidth; 
+
+                    counterCurrent.style.transition = 'transform 0.2s ease-out';
+                    counterCurrent.style.transform = 'translateY(0)';
+                    
+                    lastDisplayIndex = newIndex;
+                }, 200); 
+            }
 
             container.style.gap = '10px';
             container.style.padding = '10px 0';
 
-            const endNum = parseInt(viewEnd);
             const startLoop = viewDesc ? endNum : 1;
             const endLoop = viewDesc ? 1 : endNum;
+
+            let displayIndexCounter = 1; 
+
+            const imageObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        updateCounterAnimated(entry.target.dataset.displayIndex);
+                    }
+                });
+            }, {
+                threshold: 0.5 
+            });
 
             for (let i = startLoop; viewDesc ? i >= endLoop : i <= endLoop; viewDesc ? i-- : i++) {
                 const imageUrl = viewPattern.replace('{i}', i);
@@ -233,9 +318,27 @@
                 imageElement.className = 'displayImage';
                 imageElement.src = imageUrl;
                 imageElement.alt = `${viewTitle} #${i}`;
-
+                
+                imageElement.dataset.index = i; 
+                imageElement.dataset.displayIndex = displayIndexCounter; 
+                
+                imageObserver.observe(imageElement);
                 container.appendChild(imageElement);
+                
+                displayIndexCounter++; 
             }
+            
+            window.scrollTo(0, 0);
+
+            setTimeout(() => {
+                window.scrollTo(0, 0); 
+                updateCounterAnimated(1); 
+                
+                setTimeout(() => {
+                    updateCounterAnimated(1);
+                }, 300); 
+            }, 50); 
+
 
         } else {
 
@@ -248,11 +351,9 @@
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
                             const lazyImage = entry.target;
-
                             if (lazyImage.dataset.src) {
                                 lazyImage.src = lazyImage.dataset.src;
                                 lazyImage.classList.remove('lazy-thumb');
-
                                 observer.unobserve(lazyImage);
                             }
                         }
@@ -282,7 +383,8 @@
             }
 
             function toggleSearch() {
-                const isHidden = searchInput.style.display === 'none' || searchInput.style.display === '';
+                const isHidden = searchInput.style.display === 'none' ||
+                    searchInput.style.display === '';
 
                 if (isHidden) {
                     searchInput.value = '';
@@ -297,10 +399,9 @@
             }
 
             searchIcon.addEventListener('click', toggleSearch);
-
+            
             function filterContent() {
                 const query = searchInput.value.toLowerCase();
-
                 unobserveAllLazyImages();
 
                 toggleGroups.forEach(group => {
@@ -320,7 +421,7 @@
             }
 
             searchInput.addEventListener('input', filterContent);
-
+            
             function getUrlInfo(finalUrl) {
                 let desc = finalUrl.endsWith('★');
                 let url = finalUrl.replace('★', '');
@@ -334,7 +435,6 @@
                 if (numMatch) {
                     const numStr = numMatch[1];
                     const extension = numMatch[2];
-
                     end = parseInt(numStr);
                     pattern = url.replace(numMatch[0], '{i}' + extension);
                 } else {
@@ -343,14 +443,11 @@
 
                 const pathSeg = url.split('/');
                 let filename = pathSeg[pathSeg.length - 1];
-
                 let titlePart = filename.replace(/\.[a-zA-Z0-9]+$/, '');
-
                 const regexToRemoveAllNumbers = /(-?\d+)+$/;
 
                 titlePart = titlePart.replace(regexToRemoveAllNumbers, '');
                 titlePart = titlePart.replace(/[_-]$/, '');
-
                 titlePart = titlePart.replace(/^\d+[a-zA-Z]-/, '');
 
                 let title = titlePart.replace(/[_-]/g, ' ').trim();
@@ -363,30 +460,23 @@
             function processImageData(data) {
                 data.forEach((finalUrl, index) => {
                     const { end, pattern, desc, title } = getUrlInfo(finalUrl);
-
                     const thumbNumDefault = desc ? end : 1;
-
                     const thumbUrlDefault = pattern.replace('{i}', thumbNumDefault);
 
                     const toggleGroupDiv = document.createElement('div');
-
                     toggleGroupDiv.className = 'toggle-group';
 
                     const thumbnailContainerTopDiv = document.createElement('div');
-                    thumbnailContainerTopDiv.className
-                        = 'thumbnail-container';
+                    thumbnailContainerTopDiv.className = 'thumbnail-container';
 
                     const thumbnailImageTop = document.createElement('img');
                     thumbnailImageTop.className = 'thumbnail-image lazy-thumb';
 
                     thumbnailImageTop.dataset.src = thumbUrlDefault;
-                    thumbnailImageTop.alt = `Thumbnail: ${title}
-    #${thumbNumDefault}`;
-
+                    thumbnailImageTop.alt = `${title} #${thumbNumDefault}`;
                     thumbnailImageTop.dataset.pattern = pattern;
                     thumbnailImageTop.dataset.end = end;
                     thumbnailImageTop.dataset.desc = desc;
-
                     thumbnailImageTop.dataset.attempt = thumbNumDefault;
 
                     thumbnailImageTop.onerror = function() {
@@ -395,10 +485,9 @@
                         const pattern = img.dataset.pattern;
                         const end = parseInt(img.dataset.end);
                         const desc = img.dataset.desc === 'true';
-
                         let nextAttempt = currentAttempt;
                         let endLoop = desc ? 1 : end;
-
+                        
                         if (desc) {
                             nextAttempt = currentAttempt - 1;
                         } else {
@@ -409,20 +498,19 @@
                             img.dataset.attempt = nextAttempt;
                             img.dataset.src = pattern.replace('{i}', nextAttempt);
                             img.src = img.dataset.src;
-                            img.alt = `Thumbnail: ${title} #${nextAttempt} (Attempting fallback)`;
+                            img.alt = `${title} #${nextAttempt}`;
                         } else {
                             img.onerror = null;
                             img.style.display = 'none';
-                            console.warn(`Could not find a valid thumbnail for: ${title}`);
                         }
-
                         if (lazyImageObserver) {
                             lazyImageObserver.unobserve(img);
                         }
                     };
-
+                    
                     thumbnailContainerTopDiv.appendChild(thumbnailImageTop);
                     toggleGroupDiv.appendChild(thumbnailContainerTopDiv);
+
                     lazyImages.push(thumbnailImageTop);
 
                     const titleRow = document.createElement('div');
@@ -431,10 +519,8 @@
                     const titleElement = document.createElement('h2');
                     titleElement.className = 'image-title';
                     titleElement.textContent = title;
-
                     titleRow.appendChild(titleElement);
                     toggleGroupDiv.appendChild(titleRow);
-
 
                     container.appendChild(toggleGroupDiv);
                     toggleGroups.push(toggleGroupDiv);
@@ -445,7 +531,6 @@
                         viewerUrl.searchParams.set('end', end);
                         viewerUrl.searchParams.set('desc', desc);
                         viewerUrl.searchParams.set('title', title);
-
                         window.location.href = viewerUrl.toString();
                     };
 
@@ -460,24 +545,19 @@
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
                     }
-
                     return response.json();
                 })
                 .then(data => {
                     if (Array.isArray(data)) {
-
                         processImageData(data);
                     } else {
-                        console.error('Fetched data is not an array:', data);
-                        container.innerHTML = '<h1 style="color: red; text-align: center;">❌ Error loading gallery data. Check network connection or data URL.</h1>';
+                        container.innerHTML = '<h1 style="color: red; text-align: center;">❌ Error loading gallery data.</h1>';
                     }
-
                 })
                 .catch(error => {
-                    console.error('Error fetching data:', error);
-                    container.innerHTML = '<h1 style="color: red; text-align: center;">❌ Error loading gallery data. Check network connection or data URL.</h1>';
+                    container.innerHTML = '<h1 style="color: red; text-align: center;">❌ Error loading gallery data.</h1>';
                 });
         }
- </script>
+    </script>
 </body>
 </html>
