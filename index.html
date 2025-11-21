@@ -237,6 +237,8 @@
 
         if (viewPattern && viewEnd && viewTitle) {
             
+            
+            
             if ('scrollRestoration' in history) {
                 history.scrollRestoration = 'manual';
             }
@@ -244,8 +246,7 @@
             document.title = viewTitle;
             headerRight.innerHTML = ''; 
 
-            const endNum = parseInt(viewEnd); 
-            const totalImages = endNum;
+            const maxCheckCount = parseInt(viewEnd); 
 
             const counterWrapper = document.createElement('div');
             counterWrapper.className = 'counter-wrapper';
@@ -260,7 +261,8 @@
 
             const counterTotal = document.createElement('span');
             counterTotal.className = 'counter-total';
-            counterTotal.textContent = totalImages; 
+            
+            counterTotal.textContent = '...'; 
 
             counterWrapper.appendChild(counterCurrent);
             counterWrapper.appendChild(counterSlash);
@@ -271,7 +273,7 @@
             let lastDisplayIndex = 1;
             function updateCounterAnimated(newDisplayIndex) {
                 const newIndex = parseInt(newDisplayIndex);
-                if (newIndex === lastDisplayIndex) {
+                if (newIndex === lastDisplayIndex || isNaN(newIndex)) {
                     return; 
                 }
 
@@ -297,10 +299,11 @@
             container.style.gap = '10px';
             container.style.padding = '10px 0';
 
-            const startLoop = viewDesc ? endNum : 1;
-            const endLoop = viewDesc ? 1 : endNum;
+            const startLoop = viewDesc ? maxCheckCount : 1;
+            const endLoop = viewDesc ? 1 : maxCheckCount;
 
-            let displayIndexCounter = 1; 
+            let highestIndexFound = 0;
+            let loadedCount = 0;
 
             const imageObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
@@ -311,36 +314,75 @@
             }, {
                 threshold: 0.5 
             });
+            
+            const MAX_CONSECUTIVE_FAILURES = 5; 
+            let consecutiveFailures = 0;
+            let stopChecking = false;
 
             for (let i = startLoop; viewDesc ? i >= endLoop : i <= endLoop; viewDesc ? i-- : i++) {
+                if (!viewDesc && stopChecking) break; 
+                
                 const imageUrl = viewPattern.replace('{i}', i);
                 const imageElement = document.createElement('img');
                 imageElement.className = 'displayImage';
                 imageElement.src = imageUrl;
                 imageElement.alt = `${viewTitle} #${i}`;
                 
-                imageElement.dataset.index = i; 
-                imageElement.dataset.displayIndex = displayIndexCounter; 
+                imageElement.dataset.originalIndex = i; 
+
+                imageElement.onload = function() {
+                    consecutiveFailures = 0; 
+                    
+                    const currentIndex = parseInt(this.dataset.originalIndex);
+                    if (currentIndex > highestIndexFound) {
+                        highestIndexFound = currentIndex;
+                        
+                        counterTotal.textContent = highestIndexFound;
+                    }
+
+                    
+                    updateDisplayIndices();
+                    
+                    imageObserver.observe(this);
+                };
                 
-                imageObserver.observe(imageElement);
+                imageElement.onerror = function() {
+                    this.remove(); 
+                    consecutiveFailures++;
+                    if (!viewDesc && consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+                        stopChecking = true;
+                    }
+                };
+                
                 container.appendChild(imageElement);
-                
-                displayIndexCounter++; 
+            }
+
+            function updateDisplayIndices() {
+                const allImages = container.querySelectorAll('img.displayImage');
+                allImages.forEach((img, idx) => {
+                    img.dataset.displayIndex = idx + 1;
+                });
             }
             
+            setTimeout(() => {
+                if (highestIndexFound === 0) {
+                    counterWrapper.style.display = 'none';
+                }
+            }, 3000);
+
             window.scrollTo(0, 0);
 
             setTimeout(() => {
                 window.scrollTo(0, 0); 
                 updateCounterAnimated(1); 
-                
-                setTimeout(() => {
-                    updateCounterAnimated(1);
-                }, 300); 
             }, 50); 
 
 
         } else {
+
+            
+            
+            const DEFAULT_DYNAMIC_MAX = 500; 
 
             const lazyImages = [];
             const toggleGroups = [];
@@ -426,17 +468,31 @@
                 let desc = finalUrl.endsWith('★');
                 let url = finalUrl.replace('★', '');
 
-                const regex = /(\d+)(\.[a-zA-Z0-9]+$)/;
+                
+                const regex = /([^0-9]|^)(\d+)(\.[a-zA-Z0-9]+$)/;
                 const numMatch = url.match(regex);
 
-                let end = 1;
+                let end = DEFAULT_DYNAMIC_MAX; 
                 let pattern = url;
+                let thumbNum = 1;
 
                 if (numMatch) {
-                    const numStr = numMatch[1];
-                    const extension = numMatch[2];
-                    end = parseInt(numStr);
-                    pattern = url.replace(numMatch[0], '{i}' + extension);
+                    const prefix = numMatch[1]; 
+                    const numStr = numMatch[2]; 
+                    const extension = numMatch[3]; 
+                    const numVal = parseInt(numStr);
+                    
+                    
+                    pattern = url.replace(numMatch[0], prefix + '{i}' + extension);
+                    
+                    
+                    if (numVal > 1) {
+                        end = numVal; 
+                    } else {
+                        end = DEFAULT_DYNAMIC_MAX; 
+                    }
+
+                    thumbNum = 1; 
                 } else {
                     pattern = url.replace(/\.[a-zA-Z0-9]+$/, '{i}');
                 }
@@ -454,13 +510,17 @@
                 title = title.split(' ').map(word =>
                     word.length > 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word
                 ).join(' ');
-                return { end, pattern, desc, title };
+                
+                return { end, pattern, desc, title, thumbNum };
             }
 
             function processImageData(data) {
+                const MAX_THUMBNAIL_ATTEMPTS = 5; 
+
                 data.forEach((finalUrl, index) => {
-                    const { end, pattern, desc, title } = getUrlInfo(finalUrl);
-                    const thumbNumDefault = desc ? end : 1;
+                    const { end, pattern, desc, title, thumbNum } = getUrlInfo(finalUrl);
+                    
+                    const thumbNumDefault = thumbNum;
                     const thumbUrlDefault = pattern.replace('{i}', thumbNumDefault);
 
                     const toggleGroupDiv = document.createElement('div');
@@ -475,26 +535,18 @@
                     thumbnailImageTop.dataset.src = thumbUrlDefault;
                     thumbnailImageTop.alt = `${title} #${thumbNumDefault}`;
                     thumbnailImageTop.dataset.pattern = pattern;
-                    thumbnailImageTop.dataset.end = end;
+                    thumbnailImageTop.dataset.end = end; 
                     thumbnailImageTop.dataset.desc = desc;
-                    thumbnailImageTop.dataset.attempt = thumbNumDefault;
+                    thumbnailImageTop.dataset.attempt = 1; 
 
                     thumbnailImageTop.onerror = function() {
                         const img = this;
                         let currentAttempt = parseInt(img.dataset.attempt);
                         const pattern = img.dataset.pattern;
-                        const end = parseInt(img.dataset.end);
-                        const desc = img.dataset.desc === 'true';
-                        let nextAttempt = currentAttempt;
-                        let endLoop = desc ? 1 : end;
                         
-                        if (desc) {
-                            nextAttempt = currentAttempt - 1;
-                        } else {
-                            nextAttempt = currentAttempt + 1;
-                        }
-
-                        if ((desc && nextAttempt >= endLoop) || (!desc && nextAttempt <= endLoop)) {
+                        let nextAttempt = currentAttempt + 1;
+                        
+                        if (nextAttempt <= MAX_THUMBNAIL_ATTEMPTS) {
                             img.dataset.attempt = nextAttempt;
                             img.dataset.src = pattern.replace('{i}', nextAttempt);
                             img.src = img.dataset.src;
@@ -528,7 +580,7 @@
                     const clickHandler = function() {
                         const viewerUrl = new URL(window.location.origin + window.location.pathname);
                         viewerUrl.searchParams.set('pattern', pattern);
-                        viewerUrl.searchParams.set('end', end);
+                        viewerUrl.searchParams.set('end', end); 
                         viewerUrl.searchParams.set('desc', desc);
                         viewerUrl.searchParams.set('title', title);
                         window.location.href = viewerUrl.toString();
