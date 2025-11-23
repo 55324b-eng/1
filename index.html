@@ -15,7 +15,6 @@
         body {
             background-color: #000;
             color: #fff;
-            font-family: "Baloo 2";
             font-size: 16px;
             line-height: 1.5;
             display: flex;
@@ -47,9 +46,10 @@
 
         .header-title {
             color: #fff;
-            font-size: 20px;
-            font-weight: 800;
+            font-size: 17px;
+            font-weight: 300;
             margin-right: 20px;
+            font-family: "Baloo 2";
         }
 
         .header-right {
@@ -747,12 +747,12 @@
                                 currentStart += BATCH_SIZE; 
                             }
                         } else {
-                            container.innerHTML += '<h1 style="color: red; text-align: center;">❌ Error loading gallery data.</h1>';
+                            container.innerHTML += '<h3 style="color: red; text-align: center;">Error loading data.</h3>';
                             allDataLoaded = true;
                         }
                     })
                     .catch(error => {
-                        container.innerHTML += '<h1 style="color: red; text-align: center;">❌ Error loading gallery data.</h1>';
+                        container.innerHTML += '<h3 style="color: red; text-align: center;">Error loading data.</h3>';
                         allDataLoaded = true;
                     })
                     .finally(() => {
