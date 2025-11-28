@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ㅤㅤ</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700;800&display=swap');
         * {
             margin: 0;
             padding: 0;
@@ -21,6 +20,7 @@
             flex-direction: column;
             align-items: center;
             padding-bottom: 20px;
+            font-family: sans-serif;
         }
 
         .header-template {
@@ -49,7 +49,6 @@
             font-size: 17px;
             font-weight: 300;
             margin-right: 20px;
-            font-family: "Baloo 2";
         }
 
         .header-right {
@@ -165,7 +164,7 @@
             display: block;
             object-fit: contain;
             border-radius: 3px;
-            margin: 5px; 
+            margin: 5px;
         }
 
         .hidden {
@@ -173,19 +172,19 @@
         }
 
         .lazy-thumb {
+            background-color: #1a1a1a; 
         }
 
         .counter-wrapper {
-            height: 20px; 
+            height: 20px;
             overflow: hidden;
             position: relative;
             display: flex;
             align-items: center;
             font-size: 17px; 
             font-weight: 300; 
-            font-family: "Baloo 2"; 
             color: #fff;
-            margin-right: 0px; 
+            margin-right: 0px;
             text-shadow: 1px 1px 2px #000000; 
         }
 
@@ -196,35 +195,13 @@
         }
 
         .counter-slash {
-            margin: 0 3px; 
-        }
-        
-        .viewer-loader {
-            width: 100%;
-            text-align: center;
-            padding: 15px 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .viewer-loader .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid #fff;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            margin: 0 3px;
         }
         
         .favorite-toggle {
             cursor: pointer;
             font-size: 17px; 
             font-weight: 300; 
-            font-family: "Baloo 2"; 
             line-height: 1;
             margin-left: 10px; 
             padding-left: 0px; 
@@ -233,11 +210,11 @@
         }
 
         .star-black {
-            color: #444; 
+            color: #444;
         }
 
         .star-pink {
-            color: hotpink; 
+            color: hotpink;
         }
 
     </style>
@@ -252,15 +229,17 @@
             <input type="text" id="searchInput" class="search-input">
             <span class="search-icon" id="searchIcon">
                 <svg viewBox="0 0 24 24">
-                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+   
+                  <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
                 </svg>
             </span>
         </div>
     </div>
 
+ 
     <div class="main-content-wrapper">
         <div id="contentContainer">
-        </div>
+            </div>
     </div>
 
 
@@ -275,11 +254,11 @@
         const urlParams = new URLSearchParams(window.location.search);
         const viewPattern = urlParams.get('pattern');
         const viewEnd = urlParams.get('end');
-        let viewDesc = urlParams.get('desc') === 'true'; 
+        let viewDesc = urlParams.get('desc') === 'true';
         const viewTitle = urlParams.get('title');
 
         if (!viewPattern) {
-            document.title = 'ㅤㅤ'; 
+            document.title = 'ㅤㅤ';
         }
         
         if (viewPattern && viewEnd) {
@@ -288,25 +267,18 @@
                 history.scrollRestoration = 'manual';
             }
             headerTitle.textContent = 'Anime'; 
-            headerRight.innerHTML = ''; 
-
+            headerRight.innerHTML = '';
             let maxCheckCount = parseInt(viewEnd);
             if (isNaN(maxCheckCount)) maxCheckCount = 500; 
 
             const BATCH_SIZE_VIEWER = 8; 
-            const MAX_CONSECUTIVE_FAILURES = 10; 
+            const MAX_CONSECUTIVE_FAILURES = 10;
             let consecutiveFailures = 0;
             let stopChecking = false;
             let isLoadingBatch = false;
-            let highestIndexFound = 0; 
-            
+            let highestIndexFound = 0;
             let currentImageIndex = viewDesc ? maxCheckCount : 1; 
             const endLoop = viewDesc ? 1 : maxCheckCount;
-
-            const viewerLoader = document.createElement('div');
-            viewerLoader.className = 'viewer-loader';
-            viewerLoader.innerHTML = '<div class="spinner"></div>';
-            container.appendChild(viewerLoader);
 
             const counterWrapper = document.createElement('div');
             counterWrapper.className = 'counter-wrapper';
@@ -330,20 +302,17 @@
             const starButton = document.createElement('span');
             starButton.className = 'favorite-toggle';
             starButton.textContent = '★';
-
             starButton.classList.add(viewDesc ? 'star-pink' : 'star-black');
             headerRight.appendChild(starButton);
 
             starButton.onclick = function(e) {
-                e.stopPropagation(); 
-                
+                e.stopPropagation();
                 const currentDesc = viewDesc; 
                 const newDesc = !currentDesc; 
                 
                 const finalEnd = highestIndexFound > 0 ? highestIndexFound : maxCheckCount;
                 
                 localStorage.setItem(`series_desc_${viewPattern}`, newDesc);
-
                 const viewerUrl = new URL(window.location.origin + window.location.pathname);
                 viewerUrl.searchParams.set('pattern', viewPattern);
                 viewerUrl.searchParams.set('end', finalEnd); 
@@ -352,8 +321,6 @@
 
                 window.location.href = viewerUrl.toString();
             };
-
-
             let lastDisplayIndex = currentImageIndex;
             function updateCounterAnimated(newDisplayIndex) {
                 const newIndex = parseInt(newDisplayIndex);
@@ -366,35 +333,35 @@
                     counterCurrent.textContent = newIndex;
                     counterCurrent.style.transform = `translateY(${translateY}%)`; 
                     void counterCurrent.offsetWidth; 
+        
                     counterCurrent.style.transition = 'transform 0.2s ease-out';
                     counterCurrent.style.transform = 'translateY(0)';
                     lastDisplayIndex = newIndex;
-                }, 200); 
+                }, 200);
             }
             
             const scrollCounterObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         updateCounterAnimated(entry.target.dataset.displayIndex);
+      
                     }
                 });
             }, {
                 threshold: 0.5 
             });
-            
             let lastImageObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting && !isLoadingBatch && !stopChecking) {
                         lastImageObserver.unobserve(entry.target); 
                         loadNextBatch();
+ 
                     }
                 });
             }, {
                 rootMargin: '1000px', 
                 threshold: 0
             });
-            
-
             function updateDisplayIndices() {
                 const allImages = container.querySelectorAll('img.displayImage');
                 allImages.forEach((img, idx) => {
@@ -405,10 +372,8 @@
             function loadNextBatch() {
                 if (isLoadingBatch || stopChecking) return;
                 isLoadingBatch = true;
-                viewerLoader.style.display = 'flex'; 
                 let lastImageInBatch = null;
                 let imagesToLoad = 0;
-
                 while (imagesToLoad < BATCH_SIZE_VIEWER) {
                     if (stopChecking) break;
                     if (viewDesc) {
@@ -422,19 +387,16 @@
                     imageElement.className = 'displayImage';
                     imageElement.src = imageUrl;
                     imageElement.alt = `${viewTitle} #${currentImageIndex}`;
-                    imageElement.dataset.originalIndex = currentImageIndex; 
-                    
+                    imageElement.dataset.originalIndex = currentImageIndex;
                     imageElement.onerror = function() {
-                        this.remove(); 
+                        this.remove();
                         consecutiveFailures++;
                         if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
                             stopChecking = true;
-                            viewerLoader.style.display = 'none';
                         }
                     };
-
                     imageElement.onload = function() {
-                        consecutiveFailures = 0; 
+                        consecutiveFailures = 0;
                         const currentIndex = parseInt(this.dataset.originalIndex);
                         if (currentIndex > highestIndexFound) {
                             highestIndexFound = currentIndex;
@@ -443,7 +405,7 @@
                         scrollCounterObserver.observe(this);
                     };
                     
-                    container.insertBefore(imageElement, viewerLoader);
+                    container.appendChild(imageElement);
                     lastImageInBatch = imageElement;
                     
                     if (viewDesc) {
@@ -454,10 +416,8 @@
                     
                     imagesToLoad++;
                 }
-
-                viewerLoader.style.display = 'none'; 
-                updateDisplayIndices();
                 
+                updateDisplayIndices();
                 isLoadingBatch = false;
 
                 if (!stopChecking && lastImageInBatch) {
@@ -467,29 +427,33 @@
 
             container.style.gap = '0';
             container.style.padding = '0';
-            viewerLoader.style.display = 'flex';
             
             loadNextBatch();
 
             setTimeout(() => {
                 window.scrollTo(0, 0); 
                 updateCounterAnimated(viewDesc ? maxCheckCount : 1); 
-            }, 50); 
-            
-        } else {
+            }, 50);
 
-            const DEFAULT_DYNAMIC_MAX = 500; 
+        } else {
+            
+            
+
+            const DEFAULT_DYNAMIC_MAX = 500;
             const BATCH_SIZE = 50; 
-            let currentStart = 0; 
+            
             let isLoading = false; 
-            let allDataLoaded = false; 
-            let currentSearchQuery = ''; 
+            let currentSearchQuery = '';
             let isSearching = false; 
             const MAX_THUMBNAIL_ATTEMPTS = 5; 
             const lazyImages = [];
-            let toggleGroups = []; 
             
-
+            
+            let nextLoadIndex = 0; 
+            let allLoadedForward = false;
+            let initialScrollDone = false;
+            
+            
             let lazyImageObserver = null;
             if ('IntersectionObserver' in window) {
                 lazyImageObserver = new IntersectionObserver((entries, observer) => {
@@ -499,27 +463,41 @@
                             if (lazyImage.dataset.src) {
                                 lazyImage.src = lazyImage.dataset.src;
                                 lazyImage.classList.remove('lazy-thumb');
+                                delete lazyImage.dataset.src;
                                 observer.unobserve(lazyImage);
                             }
                         }
                     });
                 }, {
-                    rootMargin: '250px',
+                    rootMargin: '1500px', 
                     threshold: 0.01
                 });
             }
 
-            const loadingSpinner = document.createElement('div');
-            loadingSpinner.id = 'loadingSpinner';
-            loadingSpinner.textContent = ''; 
-            loadingSpinner.style.cssText = 'width: 100%; height: 10px; padding: 10px 0;'; 
-            container.appendChild(loadingSpinner);
-            loadingSpinner.classList.add('hidden'); 
+            
+            const loadTriggerElement = document.createElement('div');
+            loadTriggerElement.id = 'loadTrigger';
+            loadTriggerElement.style.height = '1px'; 
+            loadTriggerElement.style.width = '100%'; 
+            loadTriggerElement.style.margin = '10px 0'; 
+            loadTriggerElement.classList.add('hidden');
+            
+            container.appendChild(loadTriggerElement); 
+
+            function observeScrollTrigger() {
+                if (!allLoadedForward && !isSearching && !isLoading) {
+                    scrollObserver.observe(loadTriggerElement);
+                    loadTriggerElement.classList.remove('hidden'); 
+                } else {
+                    scrollObserver.unobserve(loadTriggerElement);
+                    loadTriggerElement.classList.add('hidden'); 
+                }
+            }
 
             function observeAllLazyImages() {
                 if (lazyImageObserver) {
                     lazyImages.forEach(lazyImage => {
-                        if (!lazyImage.src && lazyImage.dataset.src) {
+                        if (lazyImage.classList.contains('lazy-thumb') && lazyImage.dataset.src) {
                             lazyImageObserver.observe(lazyImage);
                         }
                     });
@@ -557,7 +535,6 @@
             
             function filterContent() {
                 const query = searchInput.value.toLowerCase().trim();
-                
                 if (query === currentSearchQuery) return; 
 
                 currentSearchQuery = query;
@@ -565,7 +542,6 @@
                 const currentUrl = new URL(window.location.href);
                 currentUrl.searchParams.delete('page');
                 window.history.replaceState(null, '', currentUrl.toString());
-
                 if (currentSearchQuery.length > 0) {
                     isSearching = true;
                     resetAndFetch(true); 
@@ -583,29 +559,24 @@
 
 
             function resetAndFetch(isSearch = false) {
-                scrollObserver.unobserve(loadingSpinner);
+                scrollObserver.unobserve(loadTriggerElement);
                 unobserveAllLazyImages(); 
 
                 container.innerHTML = '';
-                container.appendChild(loadingSpinner);
+                container.appendChild(loadTriggerElement);     
 
-                currentStart = 0;
-                allDataLoaded = false;
-                toggleGroups = []; 
-
-                if (!isSearch) {
-                    const pageParam = urlParams.get('page');
-                    if (pageParam) {
-                        const pageNum = parseInt(pageParam);
-                        if (!isNaN(pageNum) && pageNum > 1) {
-                            currentStart = (pageNum - 1) * BATCH_SIZE; 
-                        }
-                    }
+                const pageParam = urlParams.get('page');
+                let requestedPageNum = 1;
+                if (!isSearch && pageParam) {
+                    requestedPageNum = parseInt(pageParam) || 1; 
                 }
+
+                nextLoadIndex = 0; 
+                allLoadedForward = false;
+                initialScrollDone = false;
                 
-                scrollObserver.observe(loadingSpinner);
                 
-                fetchNextBatch();
+                fetchBatch(requestedPageNum, 'initial');
             }
 
             function getUrlInfo(finalUrl) {
@@ -613,21 +584,21 @@
                 let url = finalUrl.replace('★', '');
                 const regex = /([^0-9]|^)(\d+)(\.[a-zA-Z0-9]+$)/;
                 const numMatch = url.match(regex);
-                let end = DEFAULT_DYNAMIC_MAX; 
+                let end = DEFAULT_DYNAMIC_MAX;
                 let pattern = url;
                 let thumbNum = 1;
                 if (numMatch) {
-                    const prefix = numMatch[1]; 
+                    const prefix = numMatch[1];
                     const numStr = numMatch[2]; 
                     const extension = numMatch[3]; 
                     const numVal = parseInt(numStr);
                     pattern = url.replace(numMatch[0], prefix + '{i}' + extension);
                     if (numVal > 1) {
-                        end = numVal; 
+                        end = numVal;
                     } else {
-                        end = DEFAULT_DYNAMIC_MAX; 
+                        end = DEFAULT_DYNAMIC_MAX;
                     }
-                    thumbNum = 1; 
+                    thumbNum = 1;
                 } else {
                     pattern = url.replace(/\.[a-zA-Z0-9]+$/, '{i}');
                 }
@@ -645,12 +616,12 @@
                 return { end, pattern, desc, title, thumbNum };
             }
 
-            function processImageData(data) {
-                loadingSpinner.classList.add('hidden'); 
+            function processImageData(data, position) {
                 const fragment = document.createDocumentFragment();
+                const useLazyLoading = position !== 'initial';
 
                 data.forEach((finalUrl, index) => {
-                    const { end, pattern, desc, title, thumbNum } = getUrlInfo(finalUrl);
+                    const { end, pattern, title } = getUrlInfo(finalUrl);
                     
                     const thumbNumToShow = 1; 
                     const thumbUrlDefault = pattern.replace('{i}', thumbNumToShow);
@@ -662,11 +633,19 @@
                     thumbnailContainerTopDiv.className = 'thumbnail-container';
 
                     const thumbnailImageTop = document.createElement('img');
-                    thumbnailImageTop.className = 'thumbnail-image lazy-thumb';
-                    thumbnailImageTop.dataset.src = thumbUrlDefault;
+                    thumbnailImageTop.className = 'thumbnail-image';
+                    
+                    if (useLazyLoading) {
+                        thumbnailImageTop.classList.add('lazy-thumb');
+                        thumbnailImageTop.dataset.src = thumbUrlDefault;
+                    } else {
+                        thumbnailImageTop.src = thumbUrlDefault;
+                        thumbnailImageTop.dataset.src = thumbUrlDefault; 
+                    }
+
                     thumbnailImageTop.alt = `${title} #${thumbNumToShow}`;
                     thumbnailImageTop.dataset.pattern = pattern;
-                    thumbnailImageTop.dataset.end = end; 
+                    thumbnailImageTop.dataset.end = end;
                     thumbnailImageTop.dataset.desc = 'false'; 
                     thumbnailImageTop.dataset.attempt = 1; 
 
@@ -677,12 +656,21 @@
                         let nextAttempt = currentAttempt + 1;
                         if (nextAttempt <= MAX_THUMBNAIL_ATTEMPTS) {
                             img.dataset.attempt = nextAttempt;
-                            img.dataset.src = pattern.replace('{i}', nextAttempt);
-                            img.src = img.dataset.src; 
+                            const nextUrl = pattern.replace('{i}', nextAttempt);
+                            img.src = nextUrl; 
+                            img.dataset.src = nextUrl; 
                             img.alt = `${title} #${nextAttempt}`;
                         } else {
                             img.onerror = null;
-                            img.style.display = 'none';
+                            img.style.display = 'none'; 
+                            
+                            const parentContainer = img.parentElement;
+                            if (parentContainer) {
+                                parentContainer.style.backgroundColor = 'transparent';
+                                parentContainer.style.border = 'none';
+                                parentContainer.style.color = 'transparent';
+                                parentContainer.style.fontSize = '0';
+                            }
                         }
                         if (lazyImageObserver) {
                             lazyImageObserver.unobserve(img);
@@ -704,15 +692,12 @@
                     
                     toggleGroupDiv.appendChild(titleRow);
                     fragment.appendChild(toggleGroupDiv);
-                    toggleGroups.push(toggleGroupDiv);
 
                     const clickHandler = function() {
                         const viewerUrl = new URL(window.location.origin + window.location.pathname);
                         viewerUrl.searchParams.set('pattern', pattern);
                         viewerUrl.searchParams.set('end', thumbnailImageTop.dataset.end); 
-                        
                         viewerUrl.searchParams.set('desc', 'false'); 
-
                         viewerUrl.searchParams.set('title', title);
                         window.location.href = viewerUrl.toString();
                     };
@@ -721,40 +706,49 @@
                     thumbnailContainerTopDiv.onclick = clickHandler;
                 });
                 
-                container.insertBefore(fragment, loadingSpinner);
-                observeAllLazyImages();
+                container.insertBefore(fragment, loadTriggerElement);
                 
-                if (!allDataLoaded) {
-                    loadingSpinner.classList.remove('hidden');
+                if (useLazyLoading) {
+                    observeAllLazyImages();
+                }
+                
+                if (!initialScrollDone && position === 'initial') {
+                    window.scrollTo(0, 0); 
+                    initialScrollDone = true;
                 }
             }
             
-            function updateUrlForPagination() {
-                if (isSearching) return; 
-
-                const currentPage = Math.floor(currentStart / BATCH_SIZE) + 1;
+            function updateUrlForPagination(index) {
+                if (isSearching) return;
+                const currentPage = Math.floor(index / BATCH_SIZE) + 1;
                 const currentUrl = new URL(window.location.href);
                 
-                const existingPage = parseInt(currentUrl.searchParams.get('page'));
-
                 if (currentPage > 1) {
-                    if (existingPage !== currentPage) {
-                        currentUrl.searchParams.set('page', currentPage);
-                        window.history.pushState({ start: currentStart }, '', currentUrl.toString());
-                    }
-                } else if (existingPage && currentPage === 1) {
+                    currentUrl.searchParams.set('page', currentPage);
+                } else {
                     currentUrl.searchParams.delete('page');
-                    window.history.replaceState({ start: currentStart }, '', currentUrl.toString());
                 }
+                window.history.replaceState({ start: index }, '', currentUrl.toString());
             }
 
-
-            function fetchNextBatch() {
-                if (isLoading || allDataLoaded) return;
-                isLoading = true;
-                loadingSpinner.classList.remove('hidden'); 
+            function fetchBatch(loadValue, position) {
+                if (isLoading) return;
                 
-                updateUrlForPagination();
+                if (position === 'forward' && allLoadedForward) return;
+                
+                isLoading = true;
+                
+                let loadIndex;
+                let requestedPageNum = 0; 
+
+                if (position === 'initial') {
+                    requestedPageNum = loadValue; 
+                    loadIndex = 0; 
+                } else {
+                    loadIndex = loadValue; 
+                }
+
+                scrollObserver.unobserve(loadTriggerElement); 
                 
                 fetch(API_URL)
                     .then(response => {
@@ -764,73 +758,114 @@
                         return response.json();
                     })
                     .then(fullData => {
-                        if (Array.isArray(fullData)) {
-                            let filteredData = fullData;
-
-                            if (currentSearchQuery) {
-                                filteredData = fullData.filter(url => {
-                                    const { title } = getUrlInfo(url);
-                                    return title.toLowerCase().includes(currentSearchQuery);
-                                });
-
-                                if (currentStart === 0 && filteredData.length === 0) {
-                                    container.innerHTML = '<h1 style="color: grey; text-align: center; padding-top: 50px;">No results found for "' + currentSearchQuery + '".</h1>';
-                                    allDataLoaded = true;
-                                    scrollObserver.unobserve(loadingSpinner);
-                                    return;
-                                }
-                            }
-
-                            const dataBatch = filteredData.slice(currentStart, currentStart + BATCH_SIZE);
-                            processImageData(dataBatch);
-                            
-                            if (currentStart + BATCH_SIZE >= filteredData.length) {
-                                allDataLoaded = true;
-                            } else {
-                                currentStart += BATCH_SIZE; 
-                            }
-                        } else {
-                            container.innerHTML += '<h3 style="color: red; text-align: center;">Error loading data</h3>';
-                            allDataLoaded = true;
+                        if (!Array.isArray(fullData)) {
+                            throw new Error('API did not return an array.');
                         }
+                        
+                        let filteredData = fullData;
+
+                        if (currentSearchQuery) {
+                            filteredData = fullData.filter(url => {
+                                const { title } = getUrlInfo(url);
+                                return title.toLowerCase().includes(currentSearchQuery);
+                            });
+
+                            if (currentSearchQuery && filteredData.length === 0) {
+                                container.innerHTML = '<h1 style="color: grey; text-align: center; padding-top: 50px;">No results found for "' + currentSearchQuery + '".</h1>';
+                                allLoadedForward = true;
+                                scrollObserver.unobserve(loadTriggerElement);
+                                return;
+                            }
+                        }
+                        
+                        let totalItems = filteredData.length;
+                        let totalPages = Math.ceil(totalItems / BATCH_SIZE);
+                        if (totalPages === 0) totalPages = 1; 
+
+                        if (position === 'initial' && !isSearching) {
+                            let finalPageNum;
+
+                            
+                            if (requestedPageNum > totalPages) {
+                                finalPageNum = totalPages; 
+                            } else if (requestedPageNum < 1 || isNaN(requestedPageNum)) {
+                                finalPageNum = 1; 
+                            } else {
+                                finalPageNum = requestedPageNum; 
+                            }
+                            
+                            
+                            if (finalPageNum !== requestedPageNum) {
+                                const currentUrl = new URL(window.location.href);
+                                if (finalPageNum > 1) {
+                                    currentUrl.searchParams.set('page', finalPageNum);
+                                } else {
+                                    currentUrl.searchParams.delete('page');
+                                }
+                                window.history.replaceState(null, '', currentUrl.toString());
+                            }
+
+                            loadIndex = (finalPageNum - 1) * BATCH_SIZE;
+                        } 
+
+                        const dataBatch = filteredData.slice(loadIndex, loadIndex + BATCH_SIZE);
+                        processImageData(dataBatch, position);
+
+                        if (loadIndex + BATCH_SIZE >= totalItems) {
+                            allLoadedForward = true;
+                        } else {
+                            nextLoadIndex = loadIndex + BATCH_SIZE; 
+                        }
+
+                        if (isSearching) {
+                            allLoadedForward = true; 
+                        }
+
+                        
+                        if (!isSearching && position === 'forward') {
+                            
+                            updateUrlForPagination(loadIndex); 
+                        }
+                        
                     })
                     .catch(error => {
-                        container.innerHTML += '<h3 style="color: red; text-align: center;">Error loading data</h3>';
-                        allDataLoaded = true;
+                        console.error('Fetch error:', error);
+                        if (position === 'initial') {
+                            container.innerHTML = '<h3 style="color: red; text-align: center;">Error loading data.</h3>'; 
+                        }
+                        allLoadedForward = true;
                     })
                     .finally(() => {
                         isLoading = false;
-                        if (allDataLoaded) {
-                            loadingSpinner.classList.add('hidden'); 
-                        }
+                        
+                        observeScrollTrigger();
                     });
             }
 
+
+            
             const scrollObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting && !isLoading && !allDataLoaded) {
-                        fetchNextBatch();
+                    if (entry.isIntersecting && !isLoading && !allLoadedForward) {
+                        fetchBatch(nextLoadIndex, 'forward');
                     }
                 });
             }, {
-                rootMargin: '100px', 
+                rootMargin: '1000px', 
                 threshold: 0.1
             });
             
+            
             window.addEventListener('popstate', function(event) {
-                if (event.state && event.state.start !== undefined) {
-                    currentStart = event.state.start;
-                    resetAndFetch(isSearching); 
-                } else if (event.state === null) {
-                    currentStart = 0;
-                    resetAndFetch(isSearching);
+                if ('scrollRestoration' in history) {
+                    history.scrollRestoration = 'manual';
                 }
+                resetAndFetch(isSearching); 
             });
 
-
-            scrollObserver.observe(loadingSpinner);
-            fetchNextBatch();
-
+            
+            resetAndFetch();
+            
         }
     </script>
 </body>
