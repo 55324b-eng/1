@@ -2,7 +2,7 @@ import requests, re, time
 
 S, E = 1, 500
 U = 'https://hentaidad.com/page/'
-SL = 1
+SL = 1.5
 SUFF = '-1'
 RTH = r'([-_]thumb)(?=\.webp)'
 RSF = r'-\d+\.\w+$'
