@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ㅤㅤ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            font-size: 16px;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 20px;
+            font-family: sans-serif;
+        }
+
+        .header-template {
+            width: 100%;
+            height: 40px;
+            background-color: #262626;
+            flex-shrink: 0;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        .header-title {
+            color: #fff;
+            font-size: 17px;
+            font-weight: 300;
+            margin-right: 20px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-input {
+            padding: 5px 8px;
+            border: 1px solid #0056b3;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+            font-size: 14px;
+            width: 180px;
+            display: none;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: #0056b3;
+            box-shadow: 0 0 0 1px #0056b3;
+        }
+        
+        #searchIcon, #backIcon {
+            cursor: pointer;
+            width: 25px; 
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #searchIcon svg, #backIcon svg {
+            fill: #fff;
+            width: 17px; 
+            height: 17px;
+        }
+
+        .main-content-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            padding-left: 10px;
+            padding-right: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0px;
+            padding-bottom: 20px;
+        }
+
+        #contentContainer {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toggle-group {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .thumbnail-container {
+            width: 100%;
+            padding: 5px;
+            box-sizing: border-box;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .thumbnail-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 5px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .title-row {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin: 0px 0 0 0;
+            cursor: pointer;
+        }
+
+        .image-title {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            flex-grow: 1;
+            text-align: left;
+            padding-left: 5px;
+            text-shadow: 1px 1px 2px #000000;
+        }
+        
+        .displayImage {
+            max-width: 100%;
+            width: auto;
+            height: auto;
+            display: block;
+            object-fit: contain;
+            border-radius: 3px;
+            margin: 5px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .lazy-thumb {
+            background-color: #1a1a1a; 
+        }
+
+        .counter-wrapper {
+            height: 20px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            font-size: 17px; 
+            font-weight: 300; 
+            color: #fff;
+            margin-right: 0px;
+            text-shadow: 1px 1px 2px #000000; 
+        }
+
+        .counter-current {
+            display: block;
+            min-width: 10px; 
+            transition: transform 0.2s ease-out; 
+        }
+
+        .counter-slash {
+            margin: 0 3px;
+        }
+        
+        .favorite-toggle {
+            cursor: pointer;
+            font-size: 17px; 
+            font-weight: 300; 
+            line-height: 1;
+            margin-left: 10px; 
+            padding-left: 0px; 
+            user-select: none;
+            transition: color 0.2s;
+        }
+
+        .star-black {
+            color: #444;
+        }
+
+        .star-pink {
+            color: hotpink;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header-template">
+        <div class="header-left">
+            <span class="header-title">Anime</span>
+        </div>
+        <div class="header-right">
+            <input type="text" id="searchInput" class="search-input">
+            <span class="search-icon" id="searchIcon">
+                <svg viewBox="0 0 24 24">
+   
+                  <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+            </span>
+        </div>
+    </div>
+
+ 
+    <div class="main-content-wrapper">
+        <div id="contentContainer">
+            </div>
+    </div>
+
+    <script src="data.json"></script>
+
+    <script>
+        // Note: 'data' array is now available here from data.js
+        
+        const container = document.getElementById('contentContainer');
+        const headerTitle = document.querySelector('.header-title');
+        const headerRight = document.querySelector('.header-right');
+        const searchInput = document.getElementById('searchInput');
+        const searchIcon = document.getElementById('searchIcon');
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewPattern = urlParams.get('pattern');
+        const viewEnd = urlParams.get('end');
+        let viewDesc = urlParams.get('desc') === 'true';
+        const viewTitle = urlParams.get('title');
+
+        if (!viewPattern) {
+            document.title = 'ㅤㅤ';
+        }
+        
+        if (viewPattern && viewEnd) {
+            
+            if ('scrollRestoration' in history) {
+                history.scrollRestoration = 'manual';
+            }
+            headerTitle.textContent = 'Anime'; 
+            headerRight.innerHTML = '';
+            let maxCheckCount = parseInt(viewEnd);
+            if (isNaN(maxCheckCount)) maxCheckCount = 500; 
+
+            const BATCH_SIZE_VIEWER = 8; 
+            const MAX_CONSECUTIVE_FAILURES = 10;
+            let consecutiveFailures = 0;
+            let stopChecking = false;
+            let isLoadingBatch = false;
+            let highestIndexFound = 0;
+            let currentImageIndex = viewDesc ? maxCheckCount : 1; 
+            const endLoop = viewDesc ? 1 : maxCheckCount;
+
+            const counterWrapper = document.createElement('div');
+            counterWrapper.className = 'counter-wrapper';
+            const counterCurrent = document.createElement('span');
+            counterCurrent.className = 'counter-current';
+            counterCurrent.textContent = currentImageIndex; 
+
+            const counterSlash = document.createElement('span');
+            counterSlash.className = 'counter-slash';
+            counterSlash.textContent = '|';
+            const counterTotal = document.createElement('span');
+            counterTotal.className = 'counter-total';
+            counterTotal.textContent = '...'; 
+            counterWrapper.appendChild(counterCurrent);
+            counterWrapper.appendChild(counterSlash);
+            counterWrapper.appendChild(counterTotal);
+            
+            headerRight.appendChild(counterWrapper); 
+
+
+            const starButton = document.createElement('span');
+            starButton.className = 'favorite-toggle';
+            starButton.textContent = '★';
+            starButton.classList.add(viewDesc ? 'star-pink' : 'star-black');
+            headerRight.appendChild(starButton);
+
+            starButton.onclick = function(e) {
+                e.stopPropagation();
+                const currentDesc = viewDesc; 
+                const newDesc = !currentDesc; 
+                
+                const finalEnd = highestIndexFound > 0 ? highestIndexFound : maxCheckCount;
+                
+                localStorage.setItem(`series_desc_${viewPattern}`, newDesc);
+                const viewerUrl = new URL(window.location.origin + window.location.pathname);
+                viewerUrl.searchParams.set('pattern', viewPattern);
+                viewerUrl.searchParams.set('end', finalEnd); 
+                viewerUrl.searchParams.set('desc', newDesc); 
+                viewerUrl.searchParams.set('title', viewTitle);
+
+                window.location.href = viewerUrl.toString();
+            };
+            let lastDisplayIndex = currentImageIndex;
+            function updateCounterAnimated(newDisplayIndex) {
+                const newIndex = parseInt(newDisplayIndex);
+                if (newIndex === lastDisplayIndex || isNaN(newIndex)) return; 
+                const direction = (newIndex > lastDisplayIndex) ? 1 : -1;
+                const translateY = 100 * direction; 
+                counterCurrent.style.transform = `translateY(${translateY * -1}%)`;
+                setTimeout(() => {
+                    counterCurrent.style.transition = 'none'; 
+                    counterCurrent.textContent = newIndex;
+                    counterCurrent.style.transform = `translateY(${translateY}%)`; 
+                    void counterCurrent.offsetWidth; 
+        
+                    counterCurrent.style.transition = 'transform 0.2s ease-out';
+                    counterCurrent.style.transform = 'translateY(0)';
+                    lastDisplayIndex = newIndex;
+                }, 200);
+            }
+            
+            const scrollCounterObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        updateCounterAnimated(entry.target.dataset.displayIndex);
+      
+                    }
+                });
+            }, {
+                threshold: 0.5 
+            });
+            let lastImageObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !isLoadingBatch && !stopChecking) {
+                        lastImageObserver.unobserve(entry.target); 
+                        loadNextBatch();
+ 
+                    }
+                });
+            }, {
+                rootMargin: '1000px', 
+                threshold: 0
+            });
+            function updateDisplayIndices() {
+                const allImages = container.querySelectorAll('img.displayImage');
+                allImages.forEach((img, idx) => {
+                    img.dataset.displayIndex = idx + 1;
+                });
+            }
+
+            function loadNextBatch() {
+                if (isLoadingBatch || stopChecking) return;
+                isLoadingBatch = true;
+                let lastImageInBatch = null;
+                let imagesToLoad = 0;
+                while (imagesToLoad < BATCH_SIZE_VIEWER) {
+                    if (stopChecking) break;
+                    if (viewDesc) {
+                        if (currentImageIndex < endLoop) break;
+                    } else {
+                        if (currentImageIndex > endLoop) break;
+                    }
+                    
+                    const imageUrl = viewPattern.replace('{i}', currentImageIndex);
+                    const imageElement = document.createElement('img');
+                    imageElement.className = 'displayImage';
+                    imageElement.src = imageUrl;
+                    imageElement.alt = `${viewTitle} #${currentImageIndex}`;
+                    imageElement.dataset.originalIndex = currentImageIndex;
+                    imageElement.onerror = function() {
+                        this.remove();
+                        consecutiveFailures++;
+                        if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+                            stopChecking = true;
+                        }
+                    };
+                    imageElement.onload = function() {
+                        consecutiveFailures = 0;
+                        const currentIndex = parseInt(this.dataset.originalIndex);
+                        if (currentIndex > highestIndexFound) {
+                            highestIndexFound = currentIndex;
+                            counterTotal.textContent = highestIndexFound;
+                        }
+                        scrollCounterObserver.observe(this);
+                    };
+                    
+                    container.appendChild(imageElement);
+                    lastImageInBatch = imageElement;
+                    
+                    if (viewDesc) {
+                        currentImageIndex--;
+                    } else {
+                        currentImageIndex++;
+                    }
+                    
+                    imagesToLoad++;
+                }
+                
+                updateDisplayIndices();
+                isLoadingBatch = false;
+
+                if (!stopChecking && lastImageInBatch) {
+                    lastImageObserver.observe(lastImageInBatch);
+                }
+            }
+
+            container.style.gap = '0';
+            container.style.padding = '0';
+            
+            loadNextBatch();
+
+            setTimeout(() => {
+                window.scrollTo(0, 0); 
+                updateCounterAnimated(viewDesc ? maxCheckCount : 1); 
+            }, 50);
+
+        } else {
+            
+            
+
+            const DEFAULT_DYNAMIC_MAX = 500;
+            const BATCH_SIZE = 50; 
+            
+            let isLoading = false; 
+            let currentSearchQuery = '';
+            let isSearching = false; 
+            const MAX_THUMBNAIL_ATTEMPTS = 5; 
+            const lazyImages = [];
+            
+            
+            let nextLoadIndex = 0; 
+            let allLoadedForward = false;
+            let initialScrollDone = false;
+            
+            
+            let lazyImageObserver = null;
+            if ('IntersectionObserver' in window) {
+                lazyImageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const lazyImage = entry.target;
+                            if (lazyImage.dataset.src) {
+                                lazyImage.src = lazyImage.dataset.src;
+                                lazyImage.classList.remove('lazy-thumb');
+                                delete lazyImage.dataset.src;
+                                observer.unobserve(lazyImage);
+                            }
+                        }
+                    });
+                }, {
+                    rootMargin: '1500px', 
+                    threshold: 0.01
+                });
+            }
+
+            
+            const loadTriggerElement = document.createElement('div');
+            loadTriggerElement.id = 'loadTrigger';
+            loadTriggerElement.style.height = '1px'; 
+            loadTriggerElement.style.width = '100%'; 
+            loadTriggerElement.style.margin = '10px 0'; 
+            loadTriggerElement.classList.add('hidden');
+            
+            container.appendChild(loadTriggerElement); 
+
+            function observeScrollTrigger() {
+                if (!allLoadedForward && !isSearching && !isLoading) {
+                    scrollObserver.observe(loadTriggerElement);
+                    loadTriggerElement.classList.remove('hidden'); 
+                } else {
+                    scrollObserver.unobserve(loadTriggerElement);
+                    loadTriggerElement.classList.add('hidden'); 
+                }
+            }
+
+            function observeAllLazyImages() {
+                if (lazyImageObserver) {
+                    lazyImages.forEach(lazyImage => {
+                        if (lazyImage.classList.contains('lazy-thumb') && lazyImage.dataset.src) {
+                            lazyImageObserver.observe(lazyImage);
+                        }
+                    });
+                }
+            }
+
+            function unobserveAllLazyImages() {
+                if (lazyImageObserver) {
+                    lazyImages.forEach(lazyImage => {
+                        lazyImageObserver.unobserve(lazyImage);
+                    });
+                }
+            }
+
+            function toggleSearch() {
+                const isHidden = searchInput.style.display === 'none' ||
+                    searchInput.style.display === '';
+
+                if (isHidden) {
+                    searchInput.value = '';
+                    searchInput.style.display = 'block';
+                    searchInput.focus();
+                } else {
+                    searchInput.value = '';
+                    searchInput.style.display = 'none';
+                    if (currentSearchQuery !== '') {
+                        currentSearchQuery = '';
+                        isSearching = false;
+                        resetAndFetch();
+                    }
+                }
+            }
+
+            searchIcon.addEventListener('click', toggleSearch);
+            
+            function filterContent() {
+                const query = searchInput.value.toLowerCase().trim();
+                if (query === currentSearchQuery) return; 
+
+                currentSearchQuery = query;
+
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.delete('page');
+                window.history.replaceState(null, '', currentUrl.toString());
+                if (currentSearchQuery.length > 0) {
+                    isSearching = true;
+                    resetAndFetch(true); 
+                } else {
+                    isSearching = false;
+                    resetAndFetch(false); 
+                }
+            }
+            
+            let searchTimeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(filterContent, 300); 
+            });
+
+
+            function resetAndFetch(isSearch = false) {
+                scrollObserver.unobserve(loadTriggerElement);
+                unobserveAllLazyImages(); 
+
+                container.innerHTML = '';
+                container.appendChild(loadTriggerElement);     
+
+                const pageParam = urlParams.get('page');
+                let requestedPageNum = 1;
+                if (!isSearch && pageParam) {
+                    requestedPageNum = parseInt(pageParam) || 1; 
+                }
+
+                nextLoadIndex = 0; 
+                allLoadedForward = false;
+                initialScrollDone = false;
+                
+                
+                fetchBatch(requestedPageNum, 'initial');
+            }
+
+            function getUrlInfo(finalUrl) {
+                let desc = finalUrl.endsWith('★');
+                let url = finalUrl.replace('★', '');
+                const regex = /([^0-9]|^)(\d+)(\.[a-zA-Z0-9]+$)/;
+                const numMatch = url.match(regex);
+                let end = DEFAULT_DYNAMIC_MAX;
+                let pattern = url;
+                let thumbNum = 1;
+                if (numMatch) {
+                    const prefix = numMatch[1];
+                    const numStr = numMatch[2]; 
+                    const extension = numMatch[3]; 
+                    const numVal = parseInt(numStr);
+                    pattern = url.replace(numMatch[0], prefix + '{i}' + extension);
+                    if (numVal > 1) {
+                        end = numVal;
+                    } else {
+                        end = DEFAULT_DYNAMIC_MAX;
+                    }
+                    thumbNum = 1;
+                } else {
+                    pattern = url.replace(/\.[a-zA-Z0-9]+$/, '{i}');
+                }
+                const pathSeg = url.split('/');
+                let filename = pathSeg[pathSeg.length - 1];
+                let titlePart = filename.replace(/\.[a-zA-Z0-9]+$/, '');
+                const regexToRemoveAllNumbers = /(-?\d+)+$/;
+                titlePart = titlePart.replace(regexToRemoveAllNumbers, '');
+                titlePart = titlePart.replace(/[_-]$/, '');
+                titlePart = titlePart.replace(/^\d+[a-zA-Z]-/, '');
+                let title = titlePart.replace(/[_-]/g, ' ').trim();
+                title = title.split(' ').map(word =>
+                    word.length > 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word
+                ).join(' ');
+                return { end, pattern, desc, title, thumbNum };
+            }
+
+            function processImageData(data, position) {
+                const fragment = document.createDocumentFragment();
+                const useLazyLoading = position !== 'initial';
+
+                data.forEach((finalUrl, index) => {
+                    const { end, pattern, title } = getUrlInfo(finalUrl);
+                    
+                    const thumbNumToShow = 1; 
+                    const thumbUrlDefault = pattern.replace('{i}', thumbNumToShow);
+
+                    const toggleGroupDiv = document.createElement('div');
+                    toggleGroupDiv.className = 'toggle-group';
+
+                    const thumbnailContainerTopDiv = document.createElement('div');
+                    thumbnailContainerTopDiv.className = 'thumbnail-container';
+
+                    const thumbnailImageTop = document.createElement('img');
+                    thumbnailImageTop.className = 'thumbnail-image';
+                    
+                    if (useLazyLoading) {
+                        thumbnailImageTop.classList.add('lazy-thumb');
+                        thumbnailImageTop.dataset.src = thumbUrlDefault;
+                    } else {
+                        thumbnailImageTop.src = thumbUrlDefault;
+                        thumbnailImageTop.dataset.src = thumbUrlDefault; 
+                    }
+
+                    thumbnailImageTop.alt = `${title} #${thumbNumToShow}`;
+                    thumbnailImageTop.dataset.pattern = pattern;
+                    thumbnailImageTop.dataset.end = end;
+                    thumbnailImageTop.dataset.desc = 'false'; 
+                    thumbnailImageTop.dataset.attempt = 1; 
+
+                    thumbnailImageTop.onerror = function() {
+                        const img = this;
+                        let currentAttempt = parseInt(img.dataset.attempt);
+                        const pattern = img.dataset.pattern;
+                        let nextAttempt = currentAttempt + 1;
+                        if (nextAttempt <= MAX_THUMBNAIL_ATTEMPTS) {
+                            img.dataset.attempt = nextAttempt;
+                            const nextUrl = pattern.replace('{i}', nextAttempt);
+                            img.src = nextUrl; 
+                            img.dataset.src = nextUrl; 
+                            img.alt = `${title} #${nextAttempt}`;
+                        } else {
+                            img.onerror = null;
+                            img.style.display = 'none'; 
+                            
+                            const parentContainer = img.parentElement;
+                            if (parentContainer) {
+                                parentContainer.style.backgroundColor = 'transparent';
+                                parentContainer.style.border = 'none';
+                                parentContainer.style.color = 'transparent';
+                                parentContainer.style.fontSize = '0';
+                            }
+                        }
+                        if (lazyImageObserver) {
+                            lazyImageObserver.unobserve(img);
+                        }
+                    };
+                    
+                    thumbnailContainerTopDiv.appendChild(thumbnailImageTop);
+                    toggleGroupDiv.appendChild(thumbnailContainerTopDiv);
+
+                    lazyImages.push(thumbnailImageTop);
+
+                    const titleRow = document.createElement('div');
+                    titleRow.className = 'title-row';
+
+                    const titleElement = document.createElement('h2');
+                    titleElement.className = 'image-title';
+                    titleElement.textContent = title;
+                    titleRow.appendChild(titleElement);
+                    
+                    toggleGroupDiv.appendChild(titleRow);
+                    fragment.appendChild(toggleGroupDiv);
+
+                    const clickHandler = function() {
+                        const viewerUrl = new URL(window.location.origin + window.location.pathname);
+                        viewerUrl.searchParams.set('pattern', pattern);
+                        viewerUrl.searchParams.set('end', thumbnailImageTop.dataset.end); 
+                        viewerUrl.searchParams.set('desc', 'false'); 
+                        viewerUrl.searchParams.set('title', title);
+                        window.location.href = viewerUrl.toString();
+                    };
+
+                    titleRow.onclick = clickHandler;
+                    thumbnailContainerTopDiv.onclick = clickHandler;
+                });
+                
+                container.insertBefore(fragment, loadTriggerElement);
+                
+                if (useLazyLoading) {
+                    observeAllLazyImages();
+                }
+                
+                if (!initialScrollDone && position === 'initial') {
+                    window.scrollTo(0, 0); 
+                    initialScrollDone = true;
+                }
+            }
+            
+            function updateUrlForPagination(index) {
+                if (isSearching) return;
+                const currentPage = Math.floor(index / BATCH_SIZE) + 1;
+                const currentUrl = new URL(window.location.href);
+                
+                if (currentPage > 1) {
+                    currentUrl.searchParams.set('page', currentPage);
+                } else {
+                    currentUrl.searchParams.delete('page');
+                }
+                window.history.replaceState({ start: index }, '', currentUrl.toString());
+            }
+
+            function fetchBatch(loadValue, position) {
+                if (isLoading) return;
+                
+                if (position === 'forward' && allLoadedForward) return;
+                
+                isLoading = true;
+                
+                let loadIndex;
+                let requestedPageNum = 0; 
+
+                if (position === 'initial') {
+                    requestedPageNum = loadValue; 
+                    loadIndex = 0; 
+                } else {
+                    loadIndex = loadValue; 
+                }
+
+                scrollObserver.unobserve(loadTriggerElement); 
+                
+                // Directly use the local 'data' array
+                let fullData = data;
+                
+                let filteredData = fullData;
+
+                if (currentSearchQuery) {
+                    filteredData = fullData.filter(url => {
+                        const { title } = getUrlInfo(url);
+                        return title.toLowerCase().includes(currentSearchQuery);
+                    });
+
+                    if (currentSearchQuery && filteredData.length === 0) {
+                        container.innerHTML = '<h1 style="color: grey; text-align: center; padding-top: 50px;">No results found for "' + currentSearchQuery + '".</h1>';
+                        allLoadedForward = true;
+                        scrollObserver.unobserve(loadTriggerElement);
+                        isLoading = false; 
+                        return;
+                    }
+                }
+                
+                let totalItems = filteredData.length;
+                let totalPages = Math.ceil(totalItems / BATCH_SIZE);
+                if (totalPages === 0) totalPages = 1; 
+
+                if (position === 'initial' && !isSearching) {
+                    let finalPageNum;
+
+                    
+                    if (requestedPageNum > totalPages) {
+                        finalPageNum = totalPages; 
+                    } else if (requestedPageNum < 1 || isNaN(requestedPageNum)) {
+                        finalPageNum = 1; 
+                    } else {
+                        finalPageNum = requestedPageNum; 
+                    }
+                    
+                    
+                    if (finalPageNum !== requestedPageNum) {
+                        const currentUrl = new URL(window.location.href);
+                        if (finalPageNum > 1) {
+                            currentUrl.searchParams.set('page', finalPageNum);
+                        } else {
+                            currentUrl.searchParams.delete('page');
+                        }
+                        window.history.replaceState(null, '', currentUrl.toString());
+                    }
+
+                    loadIndex = (finalPageNum - 1) * BATCH_SIZE;
+                } 
+
+                const dataBatch = filteredData.slice(loadIndex, loadIndex + BATCH_SIZE);
+                processImageData(dataBatch, position);
+
+                if (loadIndex + BATCH_SIZE >= totalItems) {
+                    allLoadedForward = true;
+                } else {
+                    nextLoadIndex = loadIndex + BATCH_SIZE; 
+                }
+
+                if (isSearching) {
+                    allLoadedForward = true; 
+                }
+
+                
+                if (!isSearching && position === 'forward') {
+                    
+                    updateUrlForPagination(loadIndex); 
+                }
+                
+                isLoading = false;
+                observeScrollTrigger();
+            }
+
+
+            
+            const scrollObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !isLoading && !allLoadedForward) {
+                        fetchBatch(nextLoadIndex, 'forward');
+                    }
+                });
+            }, {
+                rootMargin: '1000px', 
+                threshold: 0.1
+            });
+            
+            
+            window.addEventListener('popstate', function(event) {
+                if ('scrollRestoration' in history) {
+                    history.scrollRestoration = 'manual';
+                }
+                resetAndFetch(isSearching); 
+            });
+
+            
+            resetAndFetch();
+            
+        }
+    </script>
+</body>
+</html>
