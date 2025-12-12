@@ -1,8 +1,10 @@
 import requests, re, time, os
 from bs4 import BeautifulSoup
 
-# --- Settings ---
-S, E = 1, 1     # উদাহরণস্বরূপ: যে পেজগুলো স্ক্র্যাপ করতে চান
+# --- Settings (এইখানে S এবং E ভ্যালু পরিবর্তন করুন) ---
+# S = Start Page (যে পেজ থেকে শুরু করতে চান, যেমন 101)
+# E = End Page (যে পেজ পর্যন্ত স্ক্র্যাপ করতে চান, যেমন 102)
+S, E = 1, 1     
 U = 'https://hentaidad.com/page/'
 SL = 2              # Sleep time (সেকেন্ড)
 SUFF = '-1'
@@ -21,7 +23,6 @@ def get_existing_data():
         with open(DATA_FILE, 'r', encoding='utf-8') as f:
             content = f.read()
             # Extract URLs (string) inside quotes
-            # এটিই নিশ্চিত করছে যে এটি শুধু স্ট্রিং লোড করবে, ডিকশনারি নয়।
             return re.findall(r'"(https?://[^"]+)"', content)
     except Exception as e:
         print(f"Error reading file: {e}")
