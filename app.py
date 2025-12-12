@@ -1,11 +1,12 @@
 import requests, re, time, os
+from bs4 import BeautifulSoup
 
-# Settings
-S, E = 1, 1     # Page range to scrape
+# --- Settings ---
+S, E = 1, 1     # উদাহরণস্বরূপ: যে পেজগুলো স্ক্র্যাপ করতে চান
 U = 'https://hentaidad.com/page/'
-SL = 2              # Sleep time
+SL = 2              # Sleep time (সেকেন্ড)
 SUFF = '-1'
-DATA_FILE = 'data.json' # File name where data is stored
+DATA_FILE = 'data' # ডাটা ফাইলটির নাম
 
 def clean_url(u, s):
     # Remove thumb suffix and handle webp replacement
@@ -19,7 +20,8 @@ def get_existing_data():
     try:
         with open(DATA_FILE, 'r', encoding='utf-8') as f:
             content = f.read()
-            # Extract URLs inside quotes
+            # Extract URLs (string) inside quotes
+            # এটিই নিশ্চিত করছে যে এটি শুধু স্ট্রিং লোড করবে, ডিকশনারি নয়।
             return re.findall(r'"(https?://[^"]+)"', content)
     except Exception as e:
         print(f"Error reading file: {e}")
@@ -27,7 +29,6 @@ def get_existing_data():
 
 def scrape(p):
     try:
-        from bs4 import BeautifulSoup
         r = requests.get(U + str(p), headers={'User-Agent':'Mozilla/5.0'}, timeout=15)
         if r.status_code != 200: return []
         
