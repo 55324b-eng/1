@@ -1,14 +1,11 @@
 import requests, re, time, os
-from bs4 import BeautifulSoup
 
-# --- Settings (এইখানে S এবং E ভ্যালু পরিবর্তন করুন) ---
-# S = Start Page (যে পেজ থেকে শুরু করতে চান, যেমন 101)
-# E = End Page (যে পেজ পর্যন্ত স্ক্র্যাপ করতে চান, যেমন 102)
-S, E = 1, 1     
+# Settings
+S, E = 1, 1     # Page range to scrape (Set to 1 to match the example output)
 U = 'https://hentaidad.com/page/'
-SL = 2              # Sleep time (সেকেন্ড)
+SL = 2              # Sleep time
 SUFF = '-1'
-DATA_FILE = 'data' # ডাটা ফাইলটির নাম
+DATA_FILE = 'data' # File name where data is stored
 
 def clean_url(u, s):
     # Remove thumb suffix and handle webp replacement
@@ -22,14 +19,18 @@ def get_existing_data():
     try:
         with open(DATA_FILE, 'r', encoding='utf-8') as f:
             content = f.read()
-            # Extract URLs (string) inside quotes
-            return re.findall(r'"(https?://[^"]+)"', content)
+            # Extract URLs inside quotes.
+            # FIX: Updated regex to match both absolute (https?://) and 
+            # protocol-relative (//) URLs.
+            # The pattern now is: '"(URL_PATTERN)"'
+            return re.findall(r'"((?:https?:)?//[^"]+)"', content)
     except Exception as e:
         print(f"Error reading file: {e}")
         return []
 
 def scrape(p):
     try:
+        from bs4 import BeautifulSoup
         r = requests.get(U + str(p), headers={'User-Agent':'Mozilla/5.0'}, timeout=15)
         if r.status_code != 200: return []
         
@@ -64,6 +65,7 @@ for p in range(S, E + 1):
     time.sleep(SL)
 
 # 3. Save MERGED data (Old + New)
+# URLs will start with // which is correct for protocol-relative paths
 formatted_body = ',\n'.join(f'"{u}"' for u in all_data)
 # Javascript variable format
 file_content = f'const data =[\n{formatted_body}\n];'
